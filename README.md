@@ -23,9 +23,14 @@ assertSuccess(results);
 
 ## Where things live
 
-- [`src/+codec/`](src/+codec/) holds the MATLAB functions shared by the encoder and decoder.
+- [`src/+codec/`](src/+codec/) is home to all the codec code. The motion functions are at the package root, where the top-level encoder and decoder will go too.
+  - [`+transform/`](src/+codec/+transform/) is for the forward and inverse 8 × 8 DCT.
+  - [`+quantization/`](src/+codec/+quantization/) is for quantizers and dequantizers, starting with uniform scalar quantization.
+  - [`+entropy/`](src/+codec/+entropy/) is for the arithmetic encoder and decoder.
 - [`examples/`](examples/) holds examples you can run with synthetic inputs.
 - [`tests/`](tests/) holds the MATLAB unit tests.
+
+Keep `src` on the MATLAB path when working on any component. A function named `forwardDct` in `+transform` would be called as `codec.transform.forwardDct(...)`.
 
 ## Motion prediction
 
