@@ -39,12 +39,12 @@ verifyEqual(testCase, counts(2, 2), 16);
 verifyEqual(testCase, codec.motion.compensateMotion(reference, vectors, 16), current);
 end
 
-function testOriginalApiWithZeroSearchRadius(testCase)
+function testZeroSearchRadiusAndCustomBlockSize(testCase)
 reference = makeTexture(7, 11);
-[vectors, counts] = codec.estimateMotion(reference, reference, 5, 0);
+[vectors, counts] = codec.motion.estimateMotion(reference, reference, 5, 0);
 verifyEqual(testCase, vectors, zeros(2, 3, 2));
 verifyEqual(testCase, counts, ones(2, 3));
-verifyEqual(testCase, codec.compensateMotion(reference, vectors, 5), reference);
+verifyEqual(testCase, codec.motion.compensateMotion(reference, vectors, 5), reference);
 end
 
 function testRejectsIncompatibleInputs(testCase)
