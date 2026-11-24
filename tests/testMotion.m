@@ -12,18 +12,18 @@ reference = makeTexture(48, 48);
 current = reference;
 current(17:32, 17:32) = reference(14:29, 22:37);
 
-[vectors, counts] = codec.estimateMotion(current, reference);
+[vectors, counts] = codec.motion.estimateMotion(current, reference);
 verifyEqual(testCase, reshape(vectors(2, 2, :), 1, 2), [-3, 5]);
 verifyEqual(testCase, counts(2, 2), 17 ^ 2);
 verifyEqual(testCase, counts(1, 1), 9 ^ 2);
 
-prediction = codec.compensateMotion(reference, vectors);
+prediction = codec.motion.compensateMotion(reference, vectors);
 verifyEqual(testCase, prediction, current);
 end
 
 function testFlatFramePrefersZeroMotion(testCase)
 reference = uint8(ones(32, 32) * 128);
-vectors = codec.estimateMotion(reference, reference);
+vectors = codec.motion.estimateMotion(reference, reference);
 verifyEqual(testCase, vectors, zeros(2, 2, 2));
 end
 
@@ -32,14 +32,14 @@ reference = makeTexture(19, 21);
 current = reference;
 current(17:19, 17:21) = reference(15:17, 14:18);
 
-[vectors, counts] = codec.estimateMotion(current, reference, 16, 3);
+[vectors, counts] = codec.motion.estimateMotion(current, reference, 16, 3);
 verifySize(testCase, vectors, [2, 2, 2]);
 verifyEqual(testCase, reshape(vectors(2, 2, :), 1, 2), [-2, -3]);
 verifyEqual(testCase, counts(2, 2), 16);
-verifyEqual(testCase, codec.compensateMotion(reference, vectors, 16), current);
+verifyEqual(testCase, codec.motion.compensateMotion(reference, vectors, 16), current);
 end
 
-function testZeroSearchRadiusAndCustomBlockSize(testCase)
+function testOriginalApiWithZeroSearchRadius(testCase)
 reference = makeTexture(7, 11);
 [vectors, counts] = codec.estimateMotion(reference, reference, 5, 0);
 verifyEqual(testCase, vectors, zeros(2, 3, 2));
@@ -49,11 +49,11 @@ end
 
 function testRejectsIncompatibleInputs(testCase)
 reference = zeros(16, 16, 'uint8');
-verifyError(testCase, @() codec.estimateMotion(reference, reference(:, 1:8)), ...
+verifyError(testCase, @() codec.motion.estimateMotion(reference, reference(:, 1:8)), ...
     'codec:FrameSizeMismatch');
-verifyError(testCase, @() codec.compensateMotion(reference, zeros(2, 1, 2)), ...
+verifyError(testCase, @() codec.motion.compensateMotion(reference, zeros(2, 1, 2)), ...
     'codec:MotionGridSizeMismatch');
-verifyError(testCase, @() codec.compensateMotion(reference, reshape([-1, 0], 1, 1, 2)), ...
+verifyError(testCase, @() codec.motion.compensateMotion(reference, reshape([-1, 0], 1, 1, 2)), ...
     'codec:MotionVectorOutOfBounds');
 end
 

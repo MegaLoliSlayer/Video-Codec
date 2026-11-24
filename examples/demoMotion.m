@@ -8,8 +8,8 @@ rows = 17:48;
 cols = 17:48;
 current(rows, cols) = reference(rows - 3, cols + 5);
 
-[vectors, candidateCounts] = codec.estimateMotion(current, reference);
-prediction = codec.compensateMotion(reference, vectors);
+[vectors, candidateCounts] = codec.motion.estimateMotion(current, reference);
+prediction = codec.motion.compensateMotion(reference, vectors);
 zeroMotionResidual = double(current) - double(reference);
 residual = double(current) - double(prediction);
 recoveredOffset = reshape(vectors(2, 2, :), 1, 2);

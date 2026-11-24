@@ -23,7 +23,8 @@ assertSuccess(results);
 
 ## Where things live
 
-- [`src/+codec/`](src/+codec/) is home to all the codec code. The motion functions are at the package root, where the top-level encoder and decoder will go too.
+- [`src/+codec/`](src/+codec/) holds the codec components and is where the top-level encoder and decoder will go.
+  - [`+motion/`](src/+codec/+motion/) holds motion estimation and compensation.
   - [`+transform/`](src/+codec/+transform/) is for the forward and inverse 8 × 8 DCT.
   - [`+quantization/`](src/+codec/+quantization/) is for quantizers and dequantizers, starting with uniform scalar quantization.
   - [`+entropy/`](src/+codec/+entropy/) is for the arithmetic encoder and decoder.
@@ -39,8 +40,8 @@ With `src` on the MATLAB path, use the previous reconstructed frame as `referenc
 ```matlab
 blockSize = 16;
 searchRadius = 8;
-[vectors, candidateCounts] = codec.estimateMotion(current, reference, blockSize, searchRadius);
-prediction = codec.compensateMotion(reference, vectors, blockSize);
+[vectors, candidateCounts] = codec.motion.estimateMotion(current, reference, blockSize, searchRadius);
+prediction = codec.motion.compensateMotion(reference, vectors, blockSize);
 residual = double(current) - double(prediction);
 ```
 
