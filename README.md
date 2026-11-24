@@ -1,21 +1,35 @@
-# ENSC 424 MATLAB Video Codec
+# Video Codec
 
-Group 5 is building a grayscale video codec in MATLAB to measure how motion prediction affects bitrate, picture quality, and encoding time. The starter implements full-search motion estimation and compensation using MATLAB R2022b and base MATLAB functions.
+We're Group 5 in ENSC 424. We're building a grayscale video codec in MATLAB to see how motion prediction affects bitrate, picture quality, and encoding time. So far, we have full-search motion estimation and motion compensation.
 
-## Run the starter
+## Run the demo
 
-Open the repository root as the current folder in MATLAB.
+From the repository root in MATLAB, add the source and examples folders to your path and run the demo.
 
 ```matlab
+addpath('src', 'examples');
 demoMotion
+```
+
+The demo runs in base MATLAB R2022b. It makes two synthetic frames with a known shift and prints the recovered motion vector, how many candidates it checked, and the mean squared prediction error.
+
+Run the tests from the repository root.
+
+```matlab
 results = runtests('tests');
 assert(~isempty(results));
 assertSuccess(results);
 ```
 
-The demo generates two reproducible frames with a known block displacement and reports the recovered vector, candidate comparisons, and prediction mean squared error. It requires no video files.
+## Where things live
 
-## Motion component
+- [`src/+codec/`](src/+codec/) holds the MATLAB functions shared by the encoder and decoder.
+- [`examples/`](examples/) holds examples you can run with synthetic inputs.
+- [`tests/`](tests/) holds the MATLAB unit tests.
+
+## Motion prediction
+
+With `src` on the MATLAB path, use the previous reconstructed frame as `reference`. The two grayscale frames must have the same dimensions. The code accepts `uint8`, `uint16`, `single`, and `double` frames.
 
 ```matlab
 blockSize = 16;
@@ -25,13 +39,12 @@ prediction = codec.compensateMotion(reference, vectors, blockSize);
 residual = double(current) - double(prediction);
 ```
 
-- `current` and `reference` are equally sized grayscale frames of type `uint8`, `uint16`, `single`, or `double`. Use the previous reconstructed frame as `reference` when integrating the encoder and decoder.
-- Each vector is `[dy, dx]` in pixels, measured from the current block to its match in the reference frame. Partial edge blocks are matched at their original size.
-- The estimator minimizes the sum of absolute differences over in-frame candidates. Equal costs favor the shortest vector. `candidateCounts` gives the number of positions evaluated per block.
-- The decoder can call `codec.compensateMotion` with the transmitted vectors, then add the decoded residual in floating point before clipping to the supported sample range.
+The search checks positions up to eight pixels away along each axis by default. It uses 16 × 16 blocks and keeps partial edge blocks at their original size. Each candidate must fit inside the reference frame. The match with the lowest sum of absolute differences wins. Ties favor shorter vectors, and `candidateCounts` records how many positions the search checked for each block.
 
-## Integration milestones
+Each vector is `[dy, dx]` in pixels, from the current block to its match in the reference frame. The decoder can use the transmitted vectors to build the same prediction, add the decoded residual in floating point, and clip the result to the sample range.
 
-1. Combine the 8 × 8 DCT, uniform scalar quantizer, and arithmetic coder for intra frames.
-2. Use the same residual coding pipeline for inter frames and transmit their motion vectors.
-3. Implement diamond search with the same vector convention. Compare full search and diamond search on bitrate, PSNR, encoding time, and candidate comparisons. Compute BD-Rate where the PSNR ranges overlap.
+## What's next
+
+First we'll combine the 8 × 8 DCT, uniform scalar quantizer, and arithmetic coder for intra frames. For inter frames, we'll use that same pipeline to code the residual and transmit the motion vectors alongside it.
+
+Once diamond search uses the same vector convention, we'll compare it with full search on bitrate, PSNR, encoding time, and the number of candidates checked. We'll calculate BD-Rate where the PSNR ranges overlap.

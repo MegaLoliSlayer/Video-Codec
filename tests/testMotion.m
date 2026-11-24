@@ -4,7 +4,7 @@ end
 
 function setupOnce(testCase)
 projectRoot = fileparts(fileparts(mfilename('fullpath')));
-testCase.applyFixture(matlab.unittest.fixtures.PathFixture(projectRoot));
+testCase.applyFixture(matlab.unittest.fixtures.PathFixture(fullfile(projectRoot, 'src')));
 end
 
 function testKnownTranslation(testCase)
