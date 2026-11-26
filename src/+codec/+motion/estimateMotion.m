@@ -1,5 +1,5 @@
 function [vectors, candidateCounts] = estimateMotion(current, reference, blockSize, searchRadius)
-%ESTIMATEMOTION Find [dy, dx] motion vectors using full-search SAD.
+%ESTIMATEMOTION Find [dy, dx] motion vectors by checking every valid offset
 
 arguments
     current
@@ -8,12 +8,14 @@ arguments
     searchRadius = 8
 end
 
+%Convert the pixels to double so the differences can be negative
 current = double(current);
 reference = double(reference);
 blockSize = double(blockSize);
 searchRadius = double(searchRadius);
 
 [height, width] = size(current);
+%Include partial blocks at the bottom and right edges
 rowStarts = 1:blockSize:height;
 colStarts = 1:blockSize:width;
 vectors = zeros(numel(rowStarts), numel(colStarts), 2);
@@ -22,6 +24,7 @@ candidateCounts = zeros(numel(rowStarts), numel(colStarts));
 for blockRow = 1:numel(rowStarts)
     firstRow = rowStarts(blockRow);
     rows = firstRow:min(firstRow + blockSize - 1, height);
+    %Keep the search within the radius and inside the reference frame
     rowOffsets = max(-searchRadius, 1 - rows(1)):min(searchRadius, height - rows(end));
 
     for blockCol = 1:numel(colStarts)
@@ -33,12 +36,14 @@ for blockRow = 1:numel(rowStarts)
         bestCost = Inf;
         bestDistance = Inf;
 
+        %Score every candidate with the sum of absolute differences
         for dy = rowOffsets
             for dx = colOffsets
                 candidate = reference(rows + dy, cols + dx);
                 cost = sum(abs(target - candidate), 'all');
                 distance = dy ^ 2 + dx ^ 2;
 
+                %When two scores tie, keep the shorter vector
                 if cost < bestCost || (cost == bestCost && distance < bestDistance)
                     bestCost = cost;
                     bestDistance = distance;
