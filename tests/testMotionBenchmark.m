@@ -59,3 +59,17 @@ fclose(fileId);
 verifyEqual(testCase, frames, uint8([1 2; 3 4]));
 verifyTrue(testCase, isnan(frameRate));
 end
+
+function testReadRawLumaAtExplicitResolution(testCase)
+folder = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+file = fullfile(folder.Folder, 'test.y');
+fileId = fopen(file, 'wb');
+fwrite(fileId, 1:12, 'uint8');
+fclose(fileId);
+
+frames = readRawLuma(file, 3, 2, 2);
+
+verifyEqual(testCase, frames(:, :, 1), uint8([1 2 3; 4 5 6]));
+verifyEqual(testCase, frames(:, :, 2), uint8([7 8 9; 10 11 12]));
+verifyError(testCase, @() readRawLuma(file, 3, 2, 3), 'codec:TruncatedRawLuma');
+end

@@ -29,7 +29,7 @@ assertSuccess(results);
   - [`+quantization/`](src/+codec/+quantization/) is for quantizers and dequantizers, starting with uniform scalar quantization.
   - [`+entropy/`](src/+codec/+entropy/) is for the arithmetic encoder and decoder.
 - [`examples/`](examples/) holds examples you can run with synthetic inputs.
-- [`experiments/`](experiments/) holds the motion benchmark and its results on three test clips.
+- [`experiments/`](experiments/) holds the motion and Lab 5 I/P benchmarks, with results on test clips and the course Foreman file.
 - [`tests/`](tests/) holds the MATLAB unit tests.
 
 Keep `src` on the MATLAB path when working on any component. A function named `forwardDct` in `+transform` would be called as `codec.transform.forwardDct(...)`.
