@@ -8,14 +8,12 @@ rows = 17:48;
 cols = 17:48;
 current(rows, cols) = reference(rows - 3, cols + 5);
 
-[vectors, candidateCounts] = codec.motion.estimateMotion(current, reference);
-prediction = codec.motion.compensateMotion(reference, vectors);
+[~, residual, motion] = codec.motion.predictFrame(current, reference);
 zeroMotionResidual = double(current) - double(reference);
-residual = double(current) - double(prediction);
-recoveredOffset = reshape(vectors(2, 2, :), 1, 2);
+recoveredOffset = reshape(motion.Vectors(2, 2, :), 1, 2);
 
 fprintf('Motion vector for block (2, 2): [dy, dx] = [%d, %d]\n', recoveredOffset);
-fprintf('Full-search candidate comparisons: %d\n', sum(candidateCounts, 'all'));
+fprintf('Full-search candidate comparisons: %d\n', sum(motion.CandidateCounts, 'all'));
 fprintf('Zero-motion prediction MSE: %.2f\n', mean(zeroMotionResidual .^ 2, 'all'));
 fprintf('Full-search prediction MSE: %.2f\n', mean(residual .^ 2, 'all'));
 end

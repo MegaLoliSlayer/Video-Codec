@@ -47,6 +47,20 @@ verifyEqual(testCase, counts, ones(2, 3));
 verifyEqual(testCase, codec.motion.compensateMotion(reference, vectors, 5), reference);
 end
 
+function testPredictFrameReturnsSignedResidualAndSearchData(testCase)
+reference = uint8([10 20; 30 40]);
+current = uint8([8 25; 30 41]);
+
+[prediction, residual, motion] = codec.motion.predictFrame(current, reference, 2, 0);
+
+verifyEqual(testCase, prediction, reference);
+verifyEqual(testCase, residual, [-2 5; 0 1]);
+verifyEqual(testCase, double(prediction) + residual, double(current));
+verifyEqual(testCase, motion.Vectors, zeros(1, 1, 2));
+verifyEqual(testCase, motion.CandidateCounts, 1);
+verifyGreaterThanOrEqual(testCase, motion.MotionStageMs, motion.SearchMs);
+end
+
 function testRejectsIncompatibleInputs(testCase)
 reference = zeros(16, 16, 'uint8');
 verifyError(testCase, @() codec.motion.estimateMotion(reference, reference(:, 1:8)), ...
@@ -55,6 +69,18 @@ verifyError(testCase, @() codec.motion.compensateMotion(reference, zeros(2, 1, 2
     'codec:MotionGridSizeMismatch');
 verifyError(testCase, @() codec.motion.compensateMotion(reference, reshape([-1, 0], 1, 1, 2)), ...
     'codec:MotionVectorOutOfBounds');
+end
+
+function testPredictFrameRejectsVectorsOutsideSearchRadius(testCase)
+frame = uint8([10 20]);
+verifyError(testCase, @() codec.motion.predictFrame(frame, frame, 1, 0, @outOfRangeEstimator), ...
+    'codec:MotionVectorOutsideSearchWindow');
+end
+
+function [vectors, counts] = outOfRangeEstimator(~, ~, ~, ~)
+vectors = zeros(1, 2, 2);
+vectors(1, 1, 2) = 1;
+counts = ones(1, 2);
 end
 
 function frame = makeTexture(height, width)

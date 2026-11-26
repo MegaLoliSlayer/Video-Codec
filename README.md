@@ -29,6 +29,7 @@ assertSuccess(results);
   - [`+quantization/`](src/+codec/+quantization/) is for quantizers and dequantizers, starting with uniform scalar quantization.
   - [`+entropy/`](src/+codec/+entropy/) is for the arithmetic encoder and decoder.
 - [`examples/`](examples/) holds examples you can run with synthetic inputs.
+- [`experiments/`](experiments/) holds the motion benchmark and its results on three test clips.
 - [`tests/`](tests/) holds the MATLAB unit tests.
 
 Keep `src` on the MATLAB path when working on any component. A function named `forwardDct` in `+transform` would be called as `codec.transform.forwardDct(...)`.
@@ -40,14 +41,14 @@ With `src` on the MATLAB path, use the previous reconstructed frame as `referenc
 ```matlab
 blockSize = 16;
 searchRadius = 8;
-[vectors, candidateCounts] = codec.motion.estimateMotion(current, reference, blockSize, searchRadius);
-prediction = codec.motion.compensateMotion(reference, vectors, blockSize);
-residual = double(current) - double(prediction);
+[prediction, residual, motion] = codec.motion.predictFrame(current, reference, blockSize, searchRadius);
 ```
 
-The search checks positions up to eight pixels away along each axis by default. It uses 16 × 16 blocks and keeps partial edge blocks at their original size. Each candidate must fit inside the reference frame. The match with the lowest sum of absolute differences wins. Ties favor shorter vectors, and `candidateCounts` records how many positions the search checked for each block.
+The default full search checks positions up to eight pixels away along each axis. It uses 16 × 16 blocks and keeps partial edge blocks at their original size. Each candidate must fit inside the reference frame. The match with the lowest sum of absolute differences wins, and ties favor shorter vectors. `motion.CandidateCounts` records the number of positions checked for each block.
 
-Each vector is `[dy, dx]` in pixels, from the current block to its match in the reference frame. The decoder can use the transmitted vectors to build the same prediction, add the decoded residual in floating point, and clip the result to the sample range.
+Each entry in `motion.Vectors` is `[dy, dx]` in pixels, from the current block to its match in the reference frame. The decoder can use the transmitted vectors with `codec.motion.compensateMotion`, then add the decoded residual in floating point and clip the result to the sample range.
+
+The [motion benchmark](experiments/README.md) measures prediction PSNR, residual error, candidate counts, and runtime. You can pass in another estimator with the same inputs and outputs as `codec.motion.estimateMotion` to compare it on the same frame pairs.
 
 ## What's next
 
