@@ -16,17 +16,20 @@ for row = 1:8:(height - 7)
     end
 end
 
-[qt_16, zag_16] = codec.quantization.init_jpegWithBlockSize(8, 30);
+%Fix: request size 16 table instead of 8
+[qt_16, zag_16] = codec.quantization.init_jpegWithBlockSize(16, 30);
 
 for row = 1:16:(height - 15)
     for col = 1:16:(width - 15)
         block = img(row:row+15, col:col+15);
 
         coeffs = dct2(block);
+        
+        %Fix: added codec.quantization to both of these calls so Matlab
+        %knows where to find the functions
+        quantizedVector = codec.quantization.quantizeCoeffBlock(coeffs, qt_16, zag_16, 16);
 
-        quantizedVector = quantizeCoeffBlock(coeffs, qt_16, zag_16, 16);
-
-        dequantizedBlock = dequantizeCoeffVector(quantizedVector, qt_16, zag_16, 16);
+        dequantizedBlock = codec.quantization.dequantizeCoeffVector(quantizedVector, qt_16, zag_16, 16);
 
     end
 end
