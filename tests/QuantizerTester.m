@@ -1,4 +1,6 @@
-img = double(imread("lena512.bmp"));
+repoRoot = fileparts(fileparts(mfilename('fullpath')));
+addpath(fullfile(repoRoot, 'src'));
+img = double(imread(fullfile(repoRoot, 'data', 'lena512.bmp')));
 [height, width, channels] = size(img);
 
 [qt_8, zag_8] = codec.quantization.init_jpegWithBlockSize(8, 30);
